@@ -1,11 +1,9 @@
 package com.weatherapp;
 
-import com.weatherapp.model.WeatherInfo;
+import com.google.gson.JsonObject;
 import com.weatherapp.service.WeatherService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class WeatherApp {
     private static final Logger logger = LoggerFactory.getLogger(WeatherApp.class);
@@ -17,17 +15,18 @@ public class WeatherApp {
             return;
         }
 
-        String lat = args.length > 0 ? args[0] : "55.7558"; // Москва по умолчанию
+        String lat = args.length > 0 ? args[0] : "55.7558";
         String lon = args.length > 1 ? args[1] : "37.6176";
+        int limit = args.length > 2 ? Integer.parseInt(args[2]) : 1;
 
         WeatherService weatherService = new WeatherService(apiKey);
         try {
-            WeatherInfo weatherInfo = weatherService.getWeather(lat, lon);
-            if (weatherInfo != null) {
-                logger.info("Текущая температура: {}", weatherInfo.getTemperature());
-                logger.info("Погодное состояние: {}", weatherInfo.getCondition());
-            }
-        } catch (IOException e) {
+            JsonObject rawWeatherData = weatherService.getRawWeatherData(lat, lon, limit);
+            logger.info("Полный ответ JSON:\n{}", rawWeatherData);
+
+            double averageTemp = weatherService.calculateAverageTemperature(rawWeatherData, limit);
+            logger.info("Средняя температура за {} дней: {}°C", limit, averageTemp);
+        } catch (Exception e) {
             logger.error("Произошла ошибка при получении данных о погоде: {}", e.getMessage(), e);
         }
     }
