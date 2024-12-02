@@ -1,32 +1,25 @@
-// src/main/java/com/weatherapp/WeatherApp.java
 package com.weatherapp;
 
 import com.weatherapp.service.WeatherService;
 
 public class WeatherApp {
-
     public static void main(String[] args) {
-        if (args.length < 3) {
-            System.out.println("Usage: java -jar WeatherApp.jar <latitude> <longitude> <limit>");
+        if (args.length < 2) {
+            System.out.println("Usage: java WeatherApp <latitude> <longitude> [limit]");
             return;
         }
 
-        try {
-            double lat = Double.parseDouble(args[0]);
-            double lon = Double.parseDouble(args[1]);
-            int limit = Integer.parseInt(args[2]);
+        double lat = Double.parseDouble(args[0]);
+        double lon = Double.parseDouble(args[1]);
+        int limit = args.length == 3 ? Integer.parseInt(args[2]) : 1;
 
-            WeatherService weatherService = new WeatherService();
-            String weatherData = weatherService.getWeatherData(lat, lon, limit);
-            
-            System.out.println("Full Weather Data: ");
-            System.out.println(weatherData);
+        WeatherService weatherService = new WeatherService();
 
-            double avgTemp = weatherService.calculateAverageTemperature(weatherData);
-            System.out.println("Average Temperature: " + avgTemp + "°C");
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+        if (limit > 1) {
+            double avgTemp = weatherService.calculateAverageTemperature(lat, lon, limit);
+            System.out.printf("Средняя температура за %d дней: %.2f°C%n", limit, avgTemp);
+        } else {
+            System.out.println(weatherService.getCurrentWeather(lat, lon));
         }
     }
 }
-
