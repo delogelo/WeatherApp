@@ -1,7 +1,7 @@
 package com.weatherapp.service;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.weatherapp.model.WeatherInfo;
 import com.weatherapp.util.HttpClient;
 
 import java.io.IOException;
@@ -14,10 +14,23 @@ public class WeatherService {
         this.apiKey = apiKey;
     }
 
-    public WeatherInfo getWeather(String lat, String lon) throws IOException {
-        String requestUrl = String.format("%s?lat=%s&lon=%s&limit=1", API_URL, lat, lon);
+    public JsonObject getRawWeatherData(String lat, String lon, int limit) throws IOException {
+        String requestUrl = String.format("%s?lat=%s&lon=%s&limit=%d", API_URL, lat, lon, limit);
         HttpClient httpClient = new HttpClient(requestUrl, apiKey);
-        JsonObject responseJson = httpClient.executeRequest();
-        return WeatherProcessor.processWeatherData(responseJson);
+        return httpClient.executeRequest();
+    }
+
+    public double calculateAverageTemperature(JsonObject weatherData, int limit) {
+        JsonArray forecasts = weatherData.getAsJsonArray("forecasts");
+        double totalTemp = 0;
+
+        for (int i = 0; i < Math.min(limit, forecasts.size()); i++) {
+            JsonObject dayPart = forecasts.get(i).getAsJsonObject()
+                                         .getAsJsonObject("parts")
+                                         .getAsJsonObject("day");
+            totalTemp += dayPart.get("temp_avg").getAsDouble();
+        }
+
+        return totalTemp / limit;
     }
 }
