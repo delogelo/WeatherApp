@@ -1,25 +1,31 @@
+// src/main/java/com/weatherapp/WeatherApp.java
+
 package com.weatherapp;
 
 import com.weatherapp.service.WeatherService;
 
 public class WeatherApp {
     public static void main(String[] args) {
-        if (args.length < 2) {
-            System.out.println("Usage: java WeatherApp <latitude> <longitude> [limit]");
+        if (args.length < 3) {
+            System.out.println("Usage: java WeatherApp <lat> <lon> <limit>");
             return;
         }
 
-        double lat = Double.parseDouble(args[0]);
-        double lon = Double.parseDouble(args[1]);
-        int limit = args.length == 3 ? Integer.parseInt(args[2]) : 1;
+        try {
+            double lat = Double.parseDouble(args[0]);
+            double lon = Double.parseDouble(args[1]);
+            int limit = Integer.parseInt(args[2]);
 
-        WeatherService weatherService = new WeatherService();
+            String apiKey = System.getenv("YANDEX_API_KEY");
+            if (apiKey == null || apiKey.isEmpty()) {
+                System.out.println("Error: YANDEX_API_KEY environment variable is not set.");
+                return;
+            }
 
-        if (limit > 1) {
-            double avgTemp = weatherService.calculateAverageTemperature(lat, lon, limit);
-            System.out.printf("Средняя температура за %d дней: %.2f°C%n", limit, avgTemp);
-        } else {
-            System.out.println(weatherService.getCurrentWeather(lat, lon));
+            WeatherService weatherService = new WeatherService(apiKey);
+            weatherService.getWeatherData(lat, lon, limit);
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid arguments. Please provide numeric values for latitude, longitude, and limit.");
         }
     }
 }
