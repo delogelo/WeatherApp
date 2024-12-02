@@ -1,33 +1,32 @@
+// src/main/java/com/weatherapp/WeatherApp.java
 package com.weatherapp;
 
-import com.google.gson.JsonObject;
 import com.weatherapp.service.WeatherService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class WeatherApp {
-    private static final Logger logger = LoggerFactory.getLogger(WeatherApp.class);
 
     public static void main(String[] args) {
-        String apiKey = System.getenv("YANDEX_API_KEY");
-        if (apiKey == null || apiKey.isEmpty()) {
-            logger.error("Ошибка: Необходимо задать ключ API в переменных окружения.");
+        if (args.length < 3) {
+            System.out.println("Usage: java -jar WeatherApp.jar <latitude> <longitude> <limit>");
             return;
         }
 
-        String lat = args.length > 0 ? args[0] : "55.7558";
-        String lon = args.length > 1 ? args[1] : "37.6176";
-        int limit = args.length > 2 ? Integer.parseInt(args[2]) : 1;
-
-        WeatherService weatherService = new WeatherService(apiKey);
         try {
-            JsonObject rawWeatherData = weatherService.getRawWeatherData(lat, lon, limit);
-            logger.info("Полный ответ JSON:\n{}", rawWeatherData);
+            double lat = Double.parseDouble(args[0]);
+            double lon = Double.parseDouble(args[1]);
+            int limit = Integer.parseInt(args[2]);
 
-            double averageTemp = weatherService.calculateAverageTemperature(rawWeatherData, limit);
-            logger.info("Средняя температура за {} дней: {}°C", limit, averageTemp);
+            WeatherService weatherService = new WeatherService();
+            String weatherData = weatherService.getWeatherData(lat, lon, limit);
+            
+            System.out.println("Full Weather Data: ");
+            System.out.println(weatherData);
+
+            double avgTemp = weatherService.calculateAverageTemperature(weatherData);
+            System.out.println("Average Temperature: " + avgTemp + "°C");
         } catch (Exception e) {
-            logger.error("Произошла ошибка при получении данных о погоде: {}", e.getMessage(), e);
+            System.err.println("Error: " + e.getMessage());
         }
     }
 }
+
