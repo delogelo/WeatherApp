@@ -1,0 +1,5 @@
+com\weatherapp\model\WeatherInfo.class
+com\weatherapp\service\WeatherService.class
+com\weatherapp\service\WeatherProcessor.class
+com\weatherapp\util\HttpClient.class
+com\weatherapp\WeatherApp.class
